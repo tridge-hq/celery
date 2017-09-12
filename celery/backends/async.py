@@ -49,16 +49,18 @@ class Drainer(object):
         wait = wait or self.result_consumer.drain_events
         time_start = monotonic()
 
-        while not p.ready:
+        while 1:
             # Total time spent may exceed a single call to wait()
             if timeout and monotonic() - time_start >= timeout:
                 raise socket.timeout()
             try:
-                yield self.wait_for(p, wait, timeout=0.1)
+                yield self.wait_for(p, wait, timeout=1)
             except socket.timeout:
                 pass
             if on_interval:
                 on_interval()
+            if p.ready:
+                break
 
     def wait_for(self, p, wait, timeout=None):
         wait(timeout=timeout)
